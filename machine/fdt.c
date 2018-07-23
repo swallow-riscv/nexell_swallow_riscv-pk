@@ -404,7 +404,8 @@ static void plic_prop(const struct fdt_scan_prop *prop, void *extra)
 #define HART_BASE	0x200000
 #define HART_SIZE	0x1000
 #define ENABLE_BASE	0x2000
-#define ENABLE_SIZE	0x80
+#define M_ENABLE_SIZE	0x80
+#define S_ENABLE_SIZE	0x100
 
 static void plic_done(const struct fdt_scan_node *node, void *extra)
 {
@@ -432,10 +433,10 @@ static void plic_done(const struct fdt_scan_node *node, void *extra)
     if (hart < MAX_HARTS) {
       hls_t *hls = OTHER_HLS(hart);
       if (cpu_int == IRQ_M_EXT) {
-        hls->plic_m_ie     = (uintptr_t*)((uintptr_t)scan->reg + ENABLE_BASE + ENABLE_SIZE * index);
+        hls->plic_m_ie     = (uint32_t*)((uintptr_t)scan->reg + ENABLE_BASE + M_ENABLE_SIZE * index);
         hls->plic_m_thresh = (uint32_t*) ((uintptr_t)scan->reg + HART_BASE   + HART_SIZE   * index);
       } else if (cpu_int == IRQ_S_EXT) {
-        hls->plic_s_ie     = (uintptr_t*)((uintptr_t)scan->reg + ENABLE_BASE + ENABLE_SIZE * index);
+        hls->plic_s_ie     = (uint32_t*)((uintptr_t)scan->reg + ENABLE_BASE + S_ENABLE_SIZE * index);
         hls->plic_s_thresh = (uint32_t*) ((uintptr_t)scan->reg + HART_BASE   + HART_SIZE   * index);
       } else {
         printm("PLIC wired hart %d to wrong interrupt %d", hart, cpu_int);
