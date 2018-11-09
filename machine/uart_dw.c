@@ -1,4 +1,5 @@
 #include <string.h>
+#include "mtrap.h"
 #include "uart_dw.h"
 #include "fdt.h"
 
@@ -11,6 +12,8 @@ volatile uint8_t* uart_dw;
 
 void uart_dw_putchar(uint8_t ch)
 {
+//workaround
+  uart_dw = (void*)(0x20880000);
   while ((uart_dw[UART_REG_LINESTAT] & UART_REG_STATUS_TX) == 0);
   uart_dw[UART_REG_QUEUE] = ch;
 }
@@ -50,13 +53,15 @@ static void uart_dw_done(const struct fdt_scan_node *node, void *extra)
   if (!scan->compat || !scan->reg || uart_dw) return;
 
   uart_dw = (void*)(uintptr_t)scan->reg;
-  // http://wiki.osdev.org/Serial_Ports
-  uart_dw[0x4] = 0x00;    // Disable all interrupts
-  uart_dw[0xc] = 0x80;    // Enable DLAB (set baud rate divisor)
-  uart_dw[0x0] = 0x03;    // Set divisor to 3 (lo byte) 38400 baud
-  uart_dw[0x4] = 0x00;    //                  (hi byte)
-  uart_dw[0xc] = 0x03;    // 8 bits, no parity, one stop bit
-  uart_dw[0x8] = 0xC7;    // Enable FIFO, clear them, with 14-byte threshold
+  //workaround  
+  uart_dw = (void*)(0x20880000);
+  /* // http://wiki.osdev.org/Serial_Ports */
+  /* uart_dw[0x4] = 0x00;    // Disable all interrupts */
+  /* uart_dw[0xc] = 0x80;    // Enable DLAB (set baud rate divisor) */
+  /* uart_dw[0x0] = 0x03;    // Set divisor to 3 (lo byte) 38400 baud */
+  /* uart_dw[0x4] = 0x00;    //                  (hi byte) */
+  /* uart_dw[0xc] = 0x03;    // 8 bits, no parity, one stop bit */
+  /* uart_dw[0x8] = 0xC7;    // Enable FIFO, clear them, with 14-byte threshold */
 }
 
 void query_uart_dw(uintptr_t fdt)

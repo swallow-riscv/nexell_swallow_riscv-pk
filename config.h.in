@@ -50,3 +50,7 @@
 
 /* Define if subproject MCPPBS_SPROJ_NORM is enabled */
 #undef UTIL_ENABLED
+
+/* Nexell customize for DEBUG */
+//#define NEXELL_SWALLOW_DEBUG
+#undef NEXELL_SWALLOW_DEBUG

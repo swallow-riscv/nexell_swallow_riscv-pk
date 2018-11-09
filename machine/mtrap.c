@@ -22,15 +22,7 @@ void __attribute__((noreturn)) bad_trap(uintptr_t* regs, uintptr_t dummy, uintpt
 
 static uintptr_t mcall_console_putchar(uint8_t ch)
 {
-  if (uart) {
-    uart_putchar(ch);
-  } else if (uart16550) {
-    uart16550_putchar(ch);
-  } else if (uart_dw) {
-    uart_dw_putchar(ch);
-  } else if (htif) {
-    htif_console_putchar(ch);
-  }
+  uart_dw_putchar(ch);
   return 0;
 }
 
@@ -66,14 +58,8 @@ static void send_ipi(uintptr_t recipient, int event)
 
 static uintptr_t mcall_console_getchar()
 {
-  if (uart) {
-    return uart_getchar();
-  } else if (uart16550) {
-    return uart16550_getchar();
-  } else if (uart_dw) {
+  if (uart_dw) {
     return uart_dw_getchar();
-  } else if (htif) {
-    return htif_console_getchar();
   } else {
     return '\0';
   }
@@ -218,8 +204,14 @@ void trap_from_machine_mode(uintptr_t* regs, uintptr_t dummy, uintptr_t mepc)
     case CAUSE_FETCH_ACCESS:
     case CAUSE_LOAD_ACCESS:
     case CAUSE_STORE_ACCESS:
-      return machine_page_fault(regs, dummy, mepc);
+#ifdef NEXELL_SWALLOW_DEBUG
+	printm("[bbl-debug]1 %s mcause = 0x%08x\r\n",__func__,mcause);
+#endif
+	return machine_page_fault(regs, dummy, mepc);
     default:
+#ifdef NEXELL_SWALLOW_DEBUG
+      printm("[bbl-debug]2 %s mcause = 0x%08x\r\n",__func__,mcause);
+#endif
       bad_trap(regs, dummy, mepc);
   }
 }

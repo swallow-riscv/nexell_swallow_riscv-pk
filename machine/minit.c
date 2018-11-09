@@ -141,38 +141,35 @@ static void wake_harts()
 
 void init_first_hart(uintptr_t hartid, uintptr_t dtb)
 {
-  // Confirm console as early as possible
-  query_uart(dtb);
-  query_uart16550(dtb);
-  query_htif(dtb);
-  query_uart_dw(dtb);
-  printm("bbl loader\r\n");
-
+//workaround: dtb address must sync with in tools/bootgen/nsih-bl1.txt
+  uintptr_t swallow_dtb = (uintptr_t)(0x87FA1000);
+#ifdef NEXELL_SWALLOW_DEBUG
+  printm("[bbl-debug] bbl loader\r\n");
+  printm("[bbl-debug] dtb addr = 0x%08x\r\n", swallow_dtb);
+#endif
+  /* query_uart_dw(dtb); */
   hart_init();
   hls_init(0); // this might get called again from parse_config_string
-
   // Find the power button early as well so die() works
-  query_finisher(dtb);
-
-  query_mem(dtb);
-  query_harts(dtb);
-  query_clint(dtb);
-  query_plic(dtb);
-
+  query_finisher(swallow_dtb);
+  query_mem(swallow_dtb);
+  query_harts(swallow_dtb);
+  query_clint(swallow_dtb);
+  query_plic(swallow_dtb);
   wake_harts();
-
   plic_init();
   hart_plic_init();
   //prci_test();
   memory_init();
-  boot_loader(dtb);
+  boot_loader(swallow_dtb);
 }
 
 void init_other_hart(uintptr_t hartid, uintptr_t dtb)
 {
+  uintptr_t swallow_dtb = (uintptr_t)(0x87FA1000);
   hart_init();
   hart_plic_init();
-  boot_other_hart(dtb);
+  boot_other_hart(swallow_dtb);
 }
 
 void enter_supervisor_mode(void (*fn)(uintptr_t), uintptr_t arg0, uintptr_t arg1)
